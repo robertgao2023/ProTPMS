@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATIS vs ProTPMS ROI — US Units (Interactive, v4)</title>
+<style>
+  :root{
+    --bg:#0b1020;
+    --card:#11162a;
+    --elev:#0d1326;
+    --border:#1e2a4a;
+    --text:#e6ecff;
+    --muted:#aab4d6;
+    --accent:#7c9cff;
+    --cyan:#22d3ee;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+  .container{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
+  .hero{
+    background: radial-gradient(1200px 600px at 10% -20%, rgba(124,156,255,.25), transparent),
+                radial-gradient(800px 400px at 100% 0%, rgba(34,211,238,.18), transparent);
+    border:1px solid var(--border);
+    border-radius:18px;padding:28px 28px 22px;margin-bottom:24px
+  }
+  .hero h1{margin:0 0 6px;font-weight:900;letter-spacing:.2px;font-size:36px;line-height:1.15;color:#fff;}
+  .hero .kicker{color:var(--muted);font-size:14px}
+  .hero .controls{margin-top:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  select, input[type="number"]{
+    background:#0c1228;border:1px solid var(--border);color:var(--text);
+    padding:10px 12px;border-radius:10px;font:inherit;outline:none;min-width:120px;
+  }
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+    background:rgba(124,156,255,.14);color:#cfe0ff;font-weight:600;font-size:12px;border:1px solid var(--border)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .section{border:1px solid var(--border);border-radius:16px;background:linear-gradient(180deg,var(--card),var(--elev));padding:18px;margin-top:18px}
+  .section h2{margin:0 0 12px;font-size:28px;line-height:1.2;font-weight:900;letter-spacing:.2px}
+  .section h2 .tag{font-size:12px;font-weight:700;color:#c7d2fe;margin-left:10px;padding:4px 8px;border-radius:999px;background:rgba(124,156,255,.18);border:1px solid var(--border)}
+  .grid{display:grid;grid-template-columns: 1fr 1fr; gap:18px}
+  fieldset{border:1px dashed var(--border);border-radius:12px;padding:14px}
+  legend{padding:0 8px;color:#c7d2fe;font-weight:700}
+  label{display:grid;grid-template-columns: 1fr 190px; align-items:center; gap:10px; font-size:13px; margin:8px 0}
+  .muted{color:var(--muted);font-size:12px}
+  .sub{font-size:12px;color:#c7d2fe;margin-top:6px}
+  table{width:100%; border-collapse:collapse; margin-top:10px;background:#0c1228;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th, td{border-top:1px solid var(--border); padding:10px 10px; text-align:right; font-variant-numeric: tabular-nums}
+  th:first-child, td:first-child{text-align:left}
+  th{background:rgba(124,156,255,.08);font-weight:800}
+  .kpi{font-weight:800}
+  .kpi-row td{background:linear-gradient(90deg, rgba(124,156,255,.08), rgba(124,156,255,0));}
+  @media (max-width: 900px){ .grid{grid-template-columns:1fr} label{grid-template-columns:1fr 160px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="row">
+      <h1>ATIS and TPMS ROI — US Applications</h1>
+      <span class="pill">USD · miles · mpg · $/gal</span>
+    </div>
+    <div class="kicker">One-scroll interactive calculator — tune parameters and see payback & ROI instantly.</div>
+    <div class="controls">
+      <label style="display:flex;gap:10px;align-items:center">
+        <span>Scenario</span>
+        <select id="scenario">
+          <option>Conservative</option>
+          <option selected>Base</option>
+          <option>Optimistic</option>
+        </select>
+      </label>
+      <span class="muted">Switch scenario to auto-fill % assumptions (you can still tweak them below).</span>
+    </div>
+  </div>
+
+  <!-- BASELINE INPUTS -->
+  <section class="section">
+    <h2>Baseline <span class="tag">Inputs</span></h2>
+    <div class="grid">
+      <fieldset>
+        <legend>Vehicle & Tires</legend>
+        <label> Tire count (pcs) <input id="tire_count" type="number" value="12" step="1"></label>
+        <label> Tire price ($/unit) <input id="tire_price" type="number" value="170" step="1"></label>
+        <label> Tire life (miles) <input id="tire_life" type="number" value="75000" step="1000"></label>
+        <label> Annual mileage (miles) <input id="annual_miles" type="number" value="100000" step="1000"></label>
+        <label> Fuel economy (mpg) <input id="mpg" type="number" value="6.5" step="0.1"></label>
+        <label> Diesel price ($/gal) <input id="diesel_price" type="number" value="3.8" step="0.1"></label>
+        <div class="sub">Fuel cost = (Annual miles ÷ mpg) × $/gal</div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Incidents & Daily Service</legend>
+        <label> Failure freq (events/yr) <input id="fail_freq" type="number" value="0.7" step="0.1"></label>
+        <label> Avg loss per event ($) <input id="fail_loss" type="number" value="2100" step="50"></label>
+        <div class="divider"></div>
+        <label> Pre-trip tire check (min/day) <input id="daily_mins" type="number" value="8" step="1"></label>
+        <label> Labor rate ($/min) <input id="per_min" type="number" value="1" step="0.25"></label>
+        <div class="sub">ATIS avoids this daily routine. Annual manual service cost without ATIS = 365 × min/day × $/min.</div>
+      </fieldset>
+    </div>
+  </section>
+
+  <!-- PARAMETER FACTORS -->
+  <section class="section">
+    <h2>Parameter Factors <span class="tag">Scenario-driven</span></h2>
+    <div class="grid">
+      <fieldset>
+        <legend>ATIS factors</legend>
+        <label> ATIS fuel Savings (%) <input id="atis_fuel" type="number" value="2" step="0.5"></label>
+        <label> ATIS tire Savings (%) <input id="atis_tire" type="number" value="15" step="1"></label>
+        <label> ATIS failure Reduction(%) <input id="atis_fail" type="number" value="50" step="5"></label>
+        <div class="sub">Enter as percentages, e.g., 2 = 2%.</div>
+      </fieldset>
+      <fieldset>
+        <legend>TPMS factors</legend>
+        <label> TPMS fuel Savings(%) <input id="tpms_fuel" type="number" value="1.5" step="0.5"></label>
+        <label> TPMS tire Savings(%) <input id="tpms_tire" type="number" value="10" step="1"></label>
+        <label> TPMS failure Reduction(%) <input id="tpms_fail" type="number" value="50" step="5"></label>
+        <div class="sub">Enter as percentages, e.g., 10 = 10%.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Combo & Fees</legend>
+        <label> TPMS data ($/month) <input id="tpms_data_mo" type="number" value="5" step="1"></label>
+        <label> Failure Reduced by overlap (0–100%) <input id="overlap" type="number" value="80" step="5" min="0" max="100"></label>
+        <label> Mgmt convenience ($/yr) <input id="mgmt_value" type="number" value="120" step="10"></label>
+        <div class="sub">Combo uses MAX(ATIS,TPMS) for fuel/tire; failures blend by overlap.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Equipment Costs</legend>
+        <label> ATIS one-time ($) <input id="atis_cost" type="number" value="700" step="10"></label>
+        <label> ProTPMS one-time ($) <input id="tpms_cost" type="number" value="490" step="10"></label>
+      </fieldset>
+    </div>
+  </section>
+
+  <!-- RESULTS: BASELINE -->
+  <section class="section">
+    <h2>Baseline <span class="tag">Results</span></h2>
+    <table>
+      <tr><th>Operational Expenses</th><th>Value ($)</th></tr>
+      <tr><td>Annual fuel cost</td><td id="base_fuel">-</td></tr>
+      <tr><td>Annual tire cost</td><td id="base_tire">-</td></tr>
+      <tr><td>Expected failure loss / yr</td><td id="base_fail">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Total baseline / yr</td><td class="kpi" id="base_total">-</td></tr>
+    </table>
+  </section>
+
+  <!-- RESULTS: ATIS -->
+  <section class="section">
+    <h2>ATIS <span class="tag">Savings & Payback</span></h2>
+    <table>
+      <tr><th>Savings Itemized</th><th>Value ($)</th></tr>
+      <tr><td>Fuel saving / yr</td><td id="atis_fs">-</td></tr>
+      <tr><td>Tire saving / yr</td><td id="atis_ts">-</td></tr>
+      <tr><td>Maint/downtime saving / yr</td><td id="atis_ms">-</td></tr>
+      <tr><td>Failure loss reduction / yr</td><td id="atis_rs">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Total saving / yr</td><td class="kpi" id="atis_total">-</td></tr>
+      <tr><td>Equipment One-time cost</td><td id="atis_cap">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Payback (months)</td><td class="kpi" id="atis_pb_mo">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">ROI (year 1)</td><td class="kpi" id="atis_roi">-</td></tr>
+    </table>
+  </section>
+
+  <!-- RESULTS: TPMS -->
+  <section class="section">
+    <h2>ProTPMS <span class="tag">Savings & Payback</span></h2>
+    <table>
+      <tr><th>Savings Itemized</th><th>Value ($)</th></tr>
+      <tr><td>Fuel saving / yr</td><td id="tpms_fs">-</td></tr>
+      <tr><td>Tire saving / yr</td><td id="tpms_ts">-</td></tr>
+      <tr><td>Failure loss reduction / yr</td><td id="tpms_rs">-</td></tr>
+      <tr><td>Data fee / yr</td><td id="tpms_fee">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Net saving / yr (after data)</td><td class="kpi" id="tpms_net">-</td></tr>
+      <tr><td>Equipment One-time cost</td><td id="tpms_cap">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Payback (months)</td><td class="kpi" id="tpms_pb_mo">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">ROI (year 1)</td><td class="kpi" id="tpms_roi">-</td></tr>
+    </table>
+  </section>
+
+  <!-- RESULTS: COMBO -->
+  <section class="section">
+    <h2>Combo (ATIS + ProTPMS) <span class="tag">No Double-Counting</span></h2>
+    <table>
+      <tr><th>Metric</th><th>Value ($)</th></tr>
+      <tr><td>Fuel saving / yr</td><td id="combo_fs">-</td></tr>
+      <tr><td>Tire saving / yr</td><td id="combo_ts">-</td></tr>
+      <tr><td>Failure loss reduction / yr</td><td id="combo_rs">-</td></tr>
+      <tr><td>Mgmt value / yr</td><td id="combo_mgmt">-</td></tr>
+      <tr><td>Data fee / yr</td><td id="combo_fee">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Net saving / yr</td><td class="kpi" id="combo_net">-</td></tr>
+      <tr><td>One-time cost</td><td id="combo_cap">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">Payback (months)</td><td class="kpi" id="combo_pb_mo">-</td></tr>
+      <tr class="kpi-row"><td class="kpi">ROI (year 1)</td><td class="kpi" id="combo_roi">-</td></tr>
+    </table>
+  </section>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = v => isFinite(v) ? v.toLocaleString(undefined,{maximumFractionDigits:0}) : "-";
+
+// Presets now in PERCENT POINTS (e.g., 2 = 2%)
+const scenarioPresets = {
+  "Conservative": {atis_fuel:1, atis_tire:10, atis_fail:30, tpms_fuel:1, tpms_tire:5, tpms_fail:40, tpms_data_mo:5, overlap:80},
+  "Base":         {atis_fuel:2, atis_tire:15, atis_fail:50, tpms_fuel:1.5, tpms_tire:10, tpms_fail:50, tpms_data_mo:9, overlap:80},
+  "Optimistic":   {atis_fuel:3, atis_tire:20, atis_fail:60, tpms_fuel:2, tpms_tire:15, tpms_fail:60, tpms_data_mo:15, overlap:70},
+};
+
+function applyScenario() {
+  const p = scenarioPresets[$("scenario").value];
+  $("atis_fuel").value = p.atis_fuel;
+  $("atis_tire").value = p.atis_tire;
+  $("atis_fail").value = p.atis_fail;
+  $("tpms_fuel").value = p.tpms_fuel;
+  $("tpms_tire").value = p.tpms_tire;
+  $("tpms_fail").value = p.tpms_fail;
+  $("tpms_data_mo").value = p.tpms_data_mo;
+  if (p.overlap !== undefined) $("overlap").value = p.overlap;
+  calc();
+}
+
+function num(id){ return parseFloat($(id).value)||0; }
+
+function calc(){
+  // Inputs
+  const tires = num("tire_count"), tirePrice=num("tire_price"), tireLife=num("tire_life");
+  const miles=num("annual_miles"), mpg=num("mpg"), diesel=num("diesel_price");
+  const failFreq=num("fail_freq"), failLoss=num("fail_loss");
+  const dailyMins=num("daily_mins"), perMin=num("per_min");
+  const atisCap=num("atis_cost"), tpmsCap=num("tpms_cost"), tpmsDataMo=num("tpms_data_mo");
+
+  // Percent inputs (divide by 100)
+  const atisFuel=num("atis_fuel")/100, atisTire=num("atis_tire")/100, atisFail=num("atis_fail")/100;
+  const tpmsFuel=num("tpms_fuel")/100, tpmsTire=num("tpms_tire")/100, tpmsFail=num("tpms_fail")/100;
+  const overlap=Math.min(100,Math.max(0, num("overlap")))/100;
+  const mgmt=num("mgmt_value");
+
+  // Baseline
+  const fuelGallons = mpg>0 ? miles/mpg : 0;
+  const baseFuel = fuelGallons * diesel;
+  const baseTire = (tireLife>0 ? miles/tireLife : 0) * tires * tirePrice;
+  const baseFail = failFreq * failLoss;
+  const baseTotal = baseFuel + baseTire + baseFail;
+
+  // ATIS daily service saving
+  const atisMaintYr = 365 * dailyMins * perMin;
+
+  // ATIS
+  const atisFuelSav = baseFuel * atisFuel;
+  const atisTireSav = baseTire - baseTire/(1+atisTire);
+  const atisFailSav = baseFail * atisFail;
+  const atisTotalSav = atisFuelSav + atisTireSav + atisMaintYr + atisFailSav;
+  const atisPaybackYears = atisTotalSav>0 ? atisCap/atisTotalSav : NaN;
+
+  // TPMS
+  const tpmsFuelSav = baseFuel * tpmsFuel;
+  const tpmsTireSav = baseTire - baseTire/(1+tpmsTire);
+  const tpmsFailSav = baseFail * tpmsFail;
+  const tpmsFeeYr = 12 * tpmsDataMo;
+  const tpmsNetSav = tpmsFuelSav + tpmsTireSav + tpmsFailSav - tpmsFeeYr;
+  const tpmsPaybackYears = tpmsNetSav>0 ? tpmsCap/tpmsNetSav : NaN;
+
+  // Combo
+  const comboFuelPct = Math.max(atisFuel, tpmsFuel);
+  const comboTirePct = Math.max(atisTire, tpmsTire);
+  const maxFail = Math.max(atisFail, tpmsFail);
+  const minFail = Math.min(atisFail, tpmsFail);
+  const comboFailPct = Math.min(1, maxFail + minFail*(1-overlap));
+
+  const comboFuelSav = baseFuel * comboFuelPct;
+  const comboTireSav = baseTire - baseTire/(1+comboTirePct);
+  const comboFailSav = baseFail * comboFailPct;
+  const comboFeeYr = tpmsFeeYr;
+  const comboCap = atisCap + tpmsCap;
+  const comboNet = comboFuelSav + comboTireSav + comboFailSav + mgmt - comboFeeYr;
+  const comboPaybackYears = comboNet>0 ? comboCap/comboNet : NaN;
+
+  // Render
+  $("base_fuel").textContent = "$" + fmt(baseFuel);
+  $("base_tire").textContent = "$" + fmt(baseTire);
+  $("base_fail").textContent = "$" + fmt(baseFail);
+  $("base_total").textContent = "$" + fmt(baseTotal);
+
+  $("atis_fs").textContent = "$" + fmt(atisFuelSav);
+  $("atis_ts").textContent = "$" + fmt(atisTireSav);
+  $("atis_ms").textContent = "$" + fmt(atisMaintYr);
+  $("atis_rs").textContent = "$" + fmt(atisFailSav);
+  $("atis_total").textContent = "$" + fmt(atisTotalSav);
+  $("atis_cap").textContent = "$" + fmt(atisCap);
+  $("atis_pb_mo").textContent = isFinite(atisPaybackYears)? (atisPaybackYears*12).toFixed(1):"-";
+  $("atis_roi").textContent = isFinite(atisCap) && atisCap>0 ? ((atisTotalSav-atisCap)/atisCap*100).toFixed(0)+"%" : "-";
+
+  $("tpms_fs").textContent = "$" + fmt(tpmsFuelSav);
+  $("tpms_ts").textContent = "$" + fmt(tpmsTireSav);
+  $("tpms_rs").textContent = "$" + fmt(tpmsFailSav);
+  $("tpms_fee").textContent = "$" + fmt(tpmsFeeYr);
+  $("tpms_net").textContent = "$" + fmt(tpmsNetSav);
+  $("tpms_cap").textContent = "$" + fmt(tpmsCap);
+  $("tpms_pb_mo").textContent = isFinite(tpmsPaybackYears)? (tpmsPaybackYears*12).toFixed(1):"-";
+  $("tpms_roi").textContent = isFinite(tpmsCap) && tpmsCap>0 ? ((tpmsNetSav-tpmsCap)/tpmsCap*100).toFixed(0)+"%" : "-";
+
+  $("combo_fs").textContent = "$" + fmt(comboFuelSav);
+  $("combo_ts").textContent = "$" + fmt(comboTireSav);
+  $("combo_rs").textContent = "$" + fmt(comboFailSav);
+  $("combo_mgmt").textContent = "$" + fmt(mgmt);
+  $("combo_fee").textContent = "$" + fmt(comboFeeYr);
+  $("combo_net").textContent = "$" + fmt(comboNet);
+  $("combo_cap").textContent = "$" + fmt(comboCap);
+  $("combo_pb_mo").textContent = isFinite(comboPaybackYears)? (comboPaybackYears*12).toFixed(1):"-";
+  $("combo_roi").textContent = isFinite(comboCap) && comboCap>0 ? ((comboNet-comboCap)/comboCap*100).toFixed(0)+"%" : "-";
+}
+
+document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+$("scenario").addEventListener('change', applyScenario);
+applyScenario();
+</script>
+</body>
+</html>
