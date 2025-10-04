@@ -75,7 +75,7 @@
 
   <!-- 基线输入 -->
   <section class="section">
-    <h2>基线 <span class="tag">输入参数</span></h2>
+    <h2>半挂车基本情况 <span class="tag">输入参数</span></h2>
     <div class="grid">
       <fieldset>
         <legend>车辆 & 轮胎</legend>
@@ -90,8 +90,8 @@
 
       <fieldset>
         <legend>事故 & 日常检查</legend>
-        <label> 故障频率（次/年） <input id="fail_freq" type="number" value="0.7" step="0.1"></label>
-        <label> 单次损失（¥/次） <input id="fail_loss" type="number" value="15000" step="100"></label>
+        <label> 平均故障频率（次/年） <input id="fail_freq" type="number" value="0.7" step="0.1"></label>
+        <label> 单次故障损失（¥/次） <input id="fail_loss" type="number" value="5000" step="100"></label>
         <div class="divider"></div>
         <label> 出车前轮胎检查（分钟/天） <input id="daily_mins" type="number" value="8" step="1"></label>
         <label> 人工费率（¥/分钟） <input id="per_min" type="number" value="2" step="0.5"></label>
@@ -105,21 +105,21 @@
     <h2>参数因子 <span class="tag">情景驱动</span></h2>
     <div class="grid">
       <fieldset>
-        <legend>ATIS 因子</legend>
+        <legend>安装ATIS的影响因子</legend>
         <label> ATIS 燃油节省（%） <input id="atis_fuel" type="number" value="2" step="0.5"></label>
         <label> ATIS 轮胎节省（%） <input id="atis_tire" type="number" value="15" step="1"></label>
         <label> ATIS 故障减少（%） <input id="atis_fail" type="number" value="50" step="5"></label>
         <div class="sub">请输入百分比，例如 2 = 2%。</div>
       </fieldset>
       <fieldset>
-        <legend>TPMS 因子</legend>
+        <legend>安装TPMS的影响因子</legend>
         <label> TPMS 燃油节省（%） <input id="tpms_fuel" type="number" value="1.5" step="0.5"></label>
         <label> TPMS 轮胎节省（%） <input id="tpms_tire" type="number" value="10" step="1"></label>
         <label> TPMS 故障减少（%） <input id="tpms_fail" type="number" value="50" step="5"></label>
         <div class="sub">TPMS 依赖人工及时处理；效果可能接近 ATIS，但更依赖执行。</div>
       </fieldset>
       <fieldset>
-        <legend>组合 & 费用</legend>
+        <legend>ATIS和TPMS组合安装 & 费用</legend>
         <label> TPMS 数据费（¥/月） <input id="tpms_data_mo" type="number" value="35" step="1"></label>
         <label> 故障重叠度（0–100%） <input id="overlap" type="number" value="80" step="5" min="0" max="100"></label>
         <label> 管理便利价值（¥/年） <input id="mgmt_value" type="number" value="800" step="50"></label>
@@ -135,7 +135,7 @@
 
   <!-- 基线结果 -->
   <section class="section">
-    <h2>基线 <span class="tag">结果</span></h2>
+    <h2>成本基线 <span class="tag">结果</span></h2>
     <table>
       <tr><th>指标</th><th>金额（¥）</th></tr>
       <tr><td>年燃油成本</td><td id="base_fuel">-</td></tr>
